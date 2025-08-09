@@ -1,0 +1,212 @@
+# Clash Verge 高级防封锁配置
+# 多协议、多端口、智能分流
+
+port: 7890
+socks-port: 7891
+redir-port: 7892
+mixed-port: 7893
+
+allow-lan: false
+bind-address: "*"
+mode: rule
+log-level: info
+ipv6: false
+
+external-controller: 127.0.0.1:9090
+secret: ""
+
+dns:
+  enable: true
+  ipv6: false
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  nameserver:
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+  fallback:
+    - https://cloudflare-dns.com/dns-query
+    - https://dns.google/dns-query
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+
+proxies:
+  - name: "V2Ray-WS-TLS"
+    type: vmess
+    server: yysyy.online
+    port: 443
+    uuid: c803bd48-08ee-4f4b-9e6a-ab17c1692a1a
+    alterId: 0
+    cipher: auto
+    tls: true
+    network: ws
+    ws-opts:
+      path: /1o46fact
+      headers:
+        Host: yysyy.online
+
+  - name: "SS-8080"
+    type: ss
+    server: 202.182.98.223
+    port: 8080
+    cipher: aes-256-gcm
+    password: "rqmb9lMQvRYKL4Owr9AbXQ=="
+    udp: true
+    plugin: obfs
+    plugin-opts:
+      mode: http
+      host: www.microsoft.com
+
+  - name: "SS-8443"
+    type: ss
+    server: 202.182.98.223
+    port: 8443
+    cipher: chacha20-ietf-poly1305
+    password: "IhgBKuYnIOmN5sB7cbegaQ=="
+    udp: true
+    plugin: obfs
+    plugin-opts:
+      mode: http
+      host: www.microsoft.com
+
+  - name: "SS-9443"
+    type: ss
+    server: 202.182.98.223
+    port: 9443
+    cipher: aes-128-gcm
+    password: "lINaALnHIiH4cSj8pJn6TQ=="
+    udp: true
+    plugin: obfs
+    plugin-opts:
+      mode: http
+      host: www.microsoft.com
+
+  - name: "SS-2053"
+    type: ss
+    server: 202.182.98.223
+    port: 2053
+    cipher: aes-256-gcm
+    password: "72adXTfY/H6swpaF/Z8WPA=="
+    udp: true
+    plugin: obfs
+    plugin-opts:
+      mode: http
+      host: www.microsoft.com
+
+  - name: "SS-2083"
+    type: ss
+    server: 202.182.98.223
+    port: 2083
+    cipher: chacha20-ietf-poly1305
+    password: "1Xh/abFadJkDm6Akw87OzA=="
+    udp: true
+    plugin: obfs
+    plugin-opts:
+      mode: http
+      host: www.microsoft.com
+
+  - name: "SS-2087"
+    type: ss
+    server: 202.182.98.223
+    port: 2087
+    cipher: aes-128-gcm
+    password: "0Th3y/rt7ZC6dgbA0WihVA=="
+    udp: true
+    plugin: obfs
+    plugin-opts:
+      mode: http
+      host: www.microsoft.com
+
+  - name: "SS-2096"
+    type: ss
+    server: 202.182.98.223
+    port: 2096
+    cipher: aes-256-gcm
+    password: "bk+ZtA9NzvpOezACsLk3bQ=="
+    udp: true
+    plugin: obfs
+    plugin-opts:
+      mode: http
+      host: www.microsoft.com
+
+proxy-groups:
+  - name: "🚀 手动选择"
+    type: select
+    proxies:
+      - V2Ray-WS-TLS
+      - SS-8080
+      - SS-8443
+      - SS-9443
+      - SS-2053
+      - SS-2083
+      - SS-2087
+      - SS-2096
+      - DIRECT
+
+  - name: "🎯 自动选择"
+    type: url-test
+    proxies:
+      - V2Ray-WS-TLS
+      - SS-8080
+      - SS-8443
+      - SS-9443
+      - SS-2053
+      - SS-2083
+      - SS-2087
+      - SS-2096
+    url: 'http://www.gstatic.com/generate_204'
+    interval: 300
+    tolerance: 50
+
+  - name: "🌍 国外网站"
+    type: select
+    proxies:
+      - 🚀 手动选择
+      - 🎯 自动选择
+      - DIRECT
+
+  - name: "📺 流媒体"
+    type: select
+    proxies:
+      - 🚀 手动选择
+      - 🎯 自动选择
+
+  - name: "🏠 国内网站"
+    type: select
+    proxies:
+      - DIRECT
+      - 🚀 手动选择
+
+rules:
+  # 本地网络
+  - DOMAIN-SUFFIX,local,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT
+  - IP-CIDR,172.16.0.0/12,DIRECT
+  - IP-CIDR,192.168.0.0/16,DIRECT
+  - IP-CIDR,10.0.0.0/8,DIRECT
+
+  # 流媒体
+  - DOMAIN-SUFFIX,youtube.com,📺 流媒体
+  - DOMAIN-SUFFIX,netflix.com,📺 流媒体
+  - DOMAIN-SUFFIX,hulu.com,📺 流媒体
+  - DOMAIN-SUFFIX,spotify.com,📺 流媒体
+
+  # 国外网站
+  - DOMAIN-SUFFIX,google.com,🌍 国外网站
+  - DOMAIN-SUFFIX,facebook.com,🌍 国外网站
+  - DOMAIN-SUFFIX,twitter.com,🌍 国外网站
+  - DOMAIN-SUFFIX,instagram.com,🌍 国外网站
+  - DOMAIN-SUFFIX,github.com,🌍 国外网站
+
+  # 国内网站
+  - DOMAIN-SUFFIX,baidu.com,🏠 国内网站
+  - DOMAIN-SUFFIX,qq.com,🏠 国内网站
+  - DOMAIN-SUFFIX,taobao.com,🏠 国内网站
+  - DOMAIN-SUFFIX,weibo.com,🏠 国内网站
+
+  # GeoIP规则
+  - GEOIP,CN,🏠 国内网站
+  - MATCH,🌍 国外网站
